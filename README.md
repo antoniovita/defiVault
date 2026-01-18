@@ -1,66 +1,65 @@
-## Foundry
+# DeFi Vault (ERC-4626) — From Scratch
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repo implements a minimal ERC-4626-style vault and a mock ERC-20 asset using Foundry. The goal is to show the core mechanics without relying on OpenZeppelin base contracts. Share accounting, allowances, and asset transfers are written manually.
 
-Foundry consists of:
+## What's inside
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- `src/ERC4626Token.sol`: Vault + share token logic (ERC-4626 behavior + ERC-20-like shares).
+- `src/MockERC20.sol`: Simple mintable ERC-20 used for testing.
+- `test/ERC4626Token.t.sol`: Forge tests covering deposit, withdraw, redeem, and rounding.
 
-## Documentation
+## Design notes
 
-https://book.getfoundry.sh/
+- Share token is implemented directly (balances/allowances/transfer/approve/transferFrom).
+- Assets are pulled/pushed via low-level calls to avoid ERC-20 return-value quirks.
+- `previewWithdraw` rounds up shares to protect the vault.
+- This code is for learning and experimentation; it is not audited.
 
-## Usage
+## Install
 
-### Build
-
-```shell
-$ forge build
+```bash
+forge install
 ```
 
-### Test
+## Build
 
-```shell
-$ forge test
+```bash
+forge build
 ```
 
-### Format
+## Test
 
-```shell
-$ forge fmt
+```bash
+forge test
 ```
 
-### Gas Snapshots
+## Usage overview
 
-```shell
-$ forge snapshot
+Deposit assets and mint shares:
+
+```solidity
+uint256 shares = vault.deposit(100 ether, alice);
 ```
 
-### Anvil
+Withdraw assets by burning shares:
 
-```shell
-$ anvil
+```solidity
+uint256 sharesBurned = vault.withdraw(10 ether, alice, alice);
 ```
 
-### Deploy
+Redeem shares for assets:
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```solidity
+uint256 assetsOut = vault.redeem(25 ether, alice, alice);
 ```
 
-### Cast
+## Security and limitations
 
-```shell
-$ cast <subcommand>
-```
+- No access control, fees, or strategy logic.
+- No ERC-4626 hooks or advanced accounting (e.g., yield, performance fees).
+- No reentrancy protection.
+- Intended for local testing and learning only.
 
-### Help
+## License
 
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+MIT
